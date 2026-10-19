@@ -1,0 +1,68 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile metadata",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string"
+        },
+        "updatedAt": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "userId",
+        "email"
+      ]
+    },
+    "UserAppState": {
+      "title": "UserAppState",
+      "description": "Synchronized personal operating deck data for the authenticated user",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        },
+        "notes": {
+          "type": "string"
+        },
+        "settings": {
+          "type": "object"
+        },
+        "academicHierarchy": {
+          "type": "object"
+        },
+        "customData": {
+          "type": "object"
+        },
+        "updatedAt": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "userId"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profile record for the single authorized user"
+    },
+    "/users/{userId}/data/{docId}": {
+      "schema": "UserAppState",
+      "description": "Real-time synchronized data and state for the authenticated user"
+    }
+  }
+}

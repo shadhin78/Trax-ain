@@ -1,0 +1,498 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    /* Base Environment Tokens */
+    --color-bg: #0B0D13;
+    --color-surface: #131722;
+    --color-surface-subtle: #0e121b;
+    --color-surface-elevated: #181e2c;
+    --color-border: #1F2637;
+    --color-border-subtle: rgba(255, 255, 255, 0.06);
+
+    /* Semantic Accent Tokens */
+    --color-accent-primary: #6366F1;
+    --color-accent-primary-hover: #4f46e5;
+    --color-accent-primary-glow: rgba(99, 102, 241, 0.16);
+
+    --color-focus-timer: #F59E0B;
+    --color-focus-timer-glow: rgba(245, 158, 11, 0.18);
+
+    --color-success-pace: #10B981;
+    --color-success-pace-glow: rgba(16, 185, 129, 0.18);
+
+    --color-warning-critical: #F43F5E;
+    --color-warning-critical-glow: rgba(244, 63, 94, 0.18);
+
+    /* Typographic Tokens */
+    --color-text-primary: #F8FAFC;
+    --color-text-muted: #94A3B8;
+    --color-text-faint: #64748B;
+
+    /* High-Density Spatial Grid Mesh Tokens (Finer Area & Increased Cell Count) */
+    --grid-line-subtle: rgba(255, 255, 255, 0.038);
+    --grid-line-converge: rgba(255, 255, 255, 0.065);
+    --grid-line-glow: rgba(99, 102, 241, 0.12);
+
+    /* Elevation Shadows */
+    --shadow-floating-slab: 0 16px 36px -8px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.05);
+    --shadow-floating-lift: 0 24px 48px -10px rgba(0, 0, 0, 0.85), 0 0 18px rgba(99, 102, 241, 0.12), 0 0 0 1px rgba(255, 255, 255, 0.10);
+    --shadow-floating-elevated: 0 28px 64px -12px rgba(0, 0, 0, 0.90), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  }
+
+  html,
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-text-primary);
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    touch-action: manipulation;
+    width: 100%;
+    max-width: 100vw;
+    height: 100%;
+    height: 100dvh;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    overscroll-behavior: none;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  #root {
+    width: 100%;
+    max-width: 100vw;
+    height: 100%;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* Prevent unexpected mobile viewport auto-zoom when tapping inputs */
+  @media (max-width: 639px) {
+    input,
+    select,
+    textarea {
+      font-size: 16px !important;
+    }
+  }
+}
+
+/* Custom Scrollbar for Command Deck */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0B0D13;
+}
+::-webkit-scrollbar-thumb {
+  background: #1F2637;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #2b354c;
+}
+
+/* Utility to completely remove scrollbars */
+.no-scrollbar::-webkit-scrollbar,
+.scrollbar-none::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+.no-scrollbar,
+.scrollbar-none {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+
+/* Accessible Focus States */
+:focus-visible {
+  outline: 2px solid var(--color-accent-primary);
+  outline-offset: 2px;
+}
+
+/* Single Unified High-Density Spatial Grid (16px base grid area) */
+.spatial-grid-base {
+  background-size: 16px 16px;
+  background-image: 
+    linear-gradient(to right, var(--grid-line-subtle) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-line-subtle) 1px, transparent 1px);
+}
+
+/* Continuous Auto-Animations for Spatial Mesh */
+@keyframes gridContinuousDrift {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 16px 16px;
+  }
+}
+
+@keyframes radarSweepHorizontal {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.55;
+  }
+  80% {
+    opacity: 0.55;
+  }
+  100% {
+    transform: translateX(200vw);
+    opacity: 0;
+  }
+}
+
+@keyframes atmosphericGlowPulse {
+  0%, 100% {
+    opacity: 0.85;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+}
+
+.animate-grid-drift {
+  animation: gridContinuousDrift 16s linear infinite;
+}
+
+.animate-radar-sweep {
+  animation: radarSweepHorizontal 12s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.animate-ambient-pulse {
+  animation: atmosphericGlowPulse 8s ease-in-out infinite;
+}
+
+/* Mobile 3-Dot Floating Menu Smooth Animations */
+@keyframes menuBackdropFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes menuModalSmoothIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.92) translateY(-14px);
+    filter: blur(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    filter: blur(0px);
+  }
+}
+
+@keyframes menuItemSlideFade {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-menu-backdrop {
+  animation: menuBackdropFadeIn 220ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-menu-modal {
+  animation: menuModalSmoothIn 280ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity, filter;
+}
+
+.animate-menu-item {
+  animation: menuItemSlideFade 240ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Spatial Modal Fluid Animations */
+@keyframes spatialModalPopIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.92) translateY(16px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes spatialModalPopOut {
+  0% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.95) translateY(12px);
+  }
+}
+
+@keyframes spatialItemCascade {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-spatial-modal-in {
+  animation: spatialModalPopIn 320ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
+.animate-spatial-modal-out {
+  animation: spatialModalPopOut 200ms cubic-bezier(0.4, 0, 1, 1) forwards;
+  will-change: transform, opacity;
+}
+
+.animate-spatial-item {
+  animation: spatialItemCascade 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: transform, opacity;
+}
+
+/* Floating Surface Utilities */
+.floating-surface {
+  background-color: rgba(19, 23, 34, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-floating-slab);
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.22s ease;
+}
+
+.floating-surface:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: var(--shadow-floating-lift);
+}
+
+.floating-surface-elevated {
+  background-color: rgba(24, 30, 44, 0.96);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  box-shadow: var(--shadow-floating-elevated);
+}
+
+/* Motion Preferences */
+@media (prefers-reduced-motion: reduce) {
+  .animate-grid-drift,
+  .animate-radar-sweep,
+  .animate-ambient-pulse,
+  .animate-trend-modal-in,
+  .animate-trend-modal-out,
+  .animate-chart-line,
+  .animate-chart-area {
+    animation: none !important;
+  }
+  .floating-surface:hover {
+    transform: none;
+  }
+}
+
+/* PC-only Trend Line Chart Modal Pop-up & Exit Animations */
+@media (min-width: 768px) {
+  @keyframes trendModalIn {
+    0% {
+      opacity: 0;
+      transform: scale(0.92) translateY(14px);
+      filter: blur(4px);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+      filter: blur(0px);
+    }
+  }
+
+  @keyframes trendModalOut {
+    0% {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+      filter: blur(0px);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(0.93) translateY(12px);
+      filter: blur(3px);
+    }
+  }
+
+  @keyframes trendBackdropIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes trendBackdropOut {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+
+  @keyframes chartLineDash {
+    from {
+      stroke-dashoffset: 1400;
+      opacity: 0.15;
+    }
+    to {
+      stroke-dashoffset: 0;
+      opacity: 1;
+    }
+  }
+
+  @keyframes chartAreaFadeIn {
+    from {
+      opacity: 0;
+      transform: scaleY(0.92);
+      transform-origin: bottom;
+    }
+    to {
+      opacity: 1;
+      transform: scaleY(1);
+      transform-origin: bottom;
+    }
+  }
+
+  .animate-trend-modal-in {
+    animation: trendModalIn 280ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    will-change: transform, opacity, filter;
+  }
+
+  .animate-trend-modal-out {
+    animation: trendModalOut 200ms cubic-bezier(0.4, 0, 1, 1) forwards;
+    will-change: transform, opacity, filter;
+  }
+
+  .animate-trend-backdrop-in {
+    animation: trendBackdropIn 240ms ease-out forwards;
+  }
+
+  .animate-trend-backdrop-out {
+    animation: trendBackdropOut 180ms ease-in forwards;
+  }
+
+  .animate-chart-line {
+    animation: chartLineDash 800ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .animate-chart-area {
+    animation: chartAreaFadeIn 650ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  @keyframes chartSweepLeftToRight {
+    0% {
+      clip-path: inset(-30px 100% -30px -30px);
+      -webkit-clip-path: inset(-30px 100% -30px -30px);
+      opacity: 0.3;
+    }
+    100% {
+      clip-path: inset(-30px -30px -30px -30px);
+      -webkit-clip-path: inset(-30px -30px -30px -30px);
+      opacity: 1;
+    }
+  }
+
+  .animate-chart-sweep-lr {
+    animation: chartSweepLeftToRight 650ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    will-change: clip-path, opacity;
+  }
+
+  @keyframes barRise {
+    0% {
+      transform: scaleY(0);
+      opacity: 0.2;
+    }
+    100% {
+      transform: scaleY(1);
+      opacity: 1;
+    }
+  }
+
+  .animate-bar-rise {
+    transform-origin: bottom;
+    animation: barRise 520ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    will-change: transform, opacity;
+  }
+
+  @keyframes columnRiseDownToUp {
+    0% {
+      transform: translateY(20px);
+      opacity: 0;
+    }
+    100% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .animate-column-rise {
+    animation: columnRiseDownToUp 450ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    will-change: transform, opacity;
+  }
+
+  @keyframes desktopAccordionOpen {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-desktop-accordion {
+    animation: desktopAccordionOpen 220ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .pc-card-hover {
+    transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 220ms cubic-bezier(0.16, 1, 0.3, 1), border-color 220ms ease;
+  }
+  .pc-card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.6), 0 0 24px rgba(99, 102, 241, 0.12);
+    border-color: rgba(255, 255, 255, 0.18);
+  }
+
+  .pc-interactive-btn {
+    transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 180ms cubic-bezier(0.16, 1, 0.3, 1), background-color 180ms ease, border-color 180ms ease;
+  }
+  .pc-interactive-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.25);
+  }
+  .pc-interactive-btn:active {
+    transform: scale(0.98);
+  }
+}
+
+
+
+

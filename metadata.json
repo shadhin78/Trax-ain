@@ -1,0 +1,6 @@
+{
+  "name": "Project-X / X-29",
+  "description": "Next-generation personal operating system, spatial command deck, and intelligent dashboard platform.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

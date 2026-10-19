@@ -1,0 +1,186 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Assumed Data Model & Architecture (X-29 Advanced Study Dashboard)
+    // ===============================================================
+    //
+    // Application Structure:
+    // Single-user / personal study command deck with zero public data sharing.
+    // All data is strictly private and partitioned under /users/{userId}.
+    //
+    // Document Paths:
+    // 1. /users/{userId}
+    //    - Description: Optional user profile metadata
+    //    - Fields: userId (string), email (string), createdAt (string), updatedAt (string)
+    //
+    // 2. /users/{userId}/data/appState
+    //    - Description: Master application state synchronized across devices
+    //    - Fields:
+    //      - userId: string (must match authenticated UID)
+    //      - updatedAt: string (ISO 8601 date string)
+    //      - version: number (monotonic version counter)
+    //      - notes: string (optional, max 100k chars)
+    //      - content: string (optional, max 100k chars)
+    //      - academicHierarchy: map (tracks, programs, subjects, chapters, tasks, completionRecords)
+    //      - customData: map (dailyActionsData, paceManagement, tableHeaders, tombstones)
+    //
+    // 3. /users/{userId}/data/outcomeData
+    //    - Description: Academic outcomes, CGPA results, target configuration, freeze state
+    //    - Fields:
+    //      - results: list of result records
+    //      - freezeConfig: map (frozenProgramIds, frozenSubjectIds, manual/auto mappings)
+    //      - celebrationCriteria: map (requiredProgramIds, requiredSubjectIds, isCustomized)
+    //      - programTargets: map of target configurations
+    //      - updatedAt: timestamp (serverTimestamp)
+    //
+    // 4. /users/{userId}/data/examRoutineData
+    //    - Description: Exam timetable sessions, upcoming schedules, and pinned subject
+    //    - Fields:
+    //      - sessions: list of exam session records
+    //      - pinnedSubjectId: string (optional)
+    //      - updatedAt: timestamp (serverTimestamp)
+    //
+    // 5. /users/{userId}/data/activeTimer
+    //    - Description: Real-time focus chronometer / timer live state
+    //    - Fields:
+    //      - mode: string ('TIMER', 'STOPWATCH', 'ALARM_RANGE')
+    //      - status: string ('IDLE', 'RUNNING', 'PAUSED', 'COMPLETED')
+    //      - startTime: number | null | timestamp
+    //      - accumulatedTime: number (>= 0)
+    //      - targetDuration: number (>= 0)
+    //      - selectedSubject: string (optional)
+    //      - preset: string | number (optional)
+    //      - alarmRangeStart: number (optional)
+    //      - alarmRangeEnd: number (optional)
+    //      - updatedAt: timestamp | number
+    //
+    // 6. /users/{userId}/data/focusDeck
+    //    - Description: Focus session history logs and subject study time targets
+    //    - Fields:
+    //      - sessions: list of completed focus session logs
+    //      - targets: list of subject hourly target records
+    //      - updatedAt: timestamp (serverTimestamp)
+    //
+    // 7. /users/{userId}/data/dailySchedule
+    //    - Description: Daily routine schedule blocks, schedule groups, categories
+    //    - Fields:
+    //      - routines: list of routine profile maps
+    //      - activeRoutineId: string (optional)
+    //      - groups: list of routine group maps
+    //      - categories: list of category strings
+    //      - updatedAt: timestamp (serverTimestamp)
+    //
+    // ===============================================================
+
+    // Default-deny all access across unauthorized collections and paths
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Verify UID hasn't been tampered with or mismatched
+    function uidUnchanged(userId) {
+      return !('userId' in request.resource.data) || request.resource.data.userId == userId;
+    }
+
+    // Valid allowlisted document IDs in the user's data subcollection
+    function isValidDocId(docId) {
+      return docId in [
+        'appState',
+        'outcomeData',
+        'examRoutineData',
+        'activeTimer',
+        'focusDeck',
+        'dailySchedule'
+      ];
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidAppState(data, userId) {
+      return uidUnchanged(userId) &&
+        (!('notes' in data) || (data.notes is string && data.notes.size() <= 100000)) &&
+        (!('content' in data) || (data.content is string && data.content.size() <= 100000)) &&
+        (!('version' in data) || data.version is number) &&
+        (!('updatedAt' in data) || (data.updatedAt is string && data.updatedAt.size() <= 60)) &&
+        (!('academicHierarchy' in data) || data.academicHierarchy is map) &&
+        (!('customData' in data) || data.customData is map);
+    }
+
+    function isValidOutcomeData(data) {
+      return (!('results' in data) || data.results is list) &&
+        (!('freezeConfig' in data) || data.freezeConfig is map) &&
+        (!('celebrationCriteria' in data) || data.celebrationCriteria is map) &&
+        (!('programTargets' in data) || data.programTargets is map);
+    }
+
+    function isValidExamRoutine(data) {
+      return (!('sessions' in data) || data.sessions is list) &&
+        (!('pinnedSubjectId' in data) || (data.pinnedSubjectId is string && data.pinnedSubjectId.size() <= 100));
+    }
+
+    function isValidActiveTimer(data) {
+      return (!('mode' in data) || (data.mode is string && data.mode in ['TIMER', 'STOPWATCH', 'ALARM_RANGE'])) &&
+        (!('status' in data) || (data.status is string && data.status in ['IDLE', 'RUNNING', 'PAUSED', 'COMPLETED'])) &&
+        (!('accumulatedTime' in data) || (data.accumulatedTime is number && data.accumulatedTime >= 0)) &&
+        (!('targetDuration' in data) || (data.targetDuration is number && data.targetDuration >= 0));
+    }
+
+    function isValidFocusDeck(data) {
+      return (!('sessions' in data) || data.sessions is list) &&
+        (!('targets' in data) || data.targets is list);
+    }
+
+    function isValidDailySchedule(data) {
+      return (!('routines' in data) || data.routines is list) &&
+        (!('groups' in data) || data.groups is list) &&
+        (!('categories' in data) || data.categories is list) &&
+        (!('activeRoutineId' in data) || (data.activeRoutineId is string && data.activeRoutineId.size() <= 100));
+    }
+
+    // Consolidated document schema dispatcher
+    function isValidUserDataDoc(docId, data, userId) {
+      return docId == 'appState' ? isValidAppState(data, userId) :
+             docId == 'outcomeData' ? isValidOutcomeData(data) :
+             docId == 'examRoutineData' ? isValidExamRoutine(data) :
+             docId == 'activeTimer' ? isValidActiveTimer(data) :
+             docId == 'focusDeck' ? isValidFocusDeck(data) :
+             docId == 'dailySchedule' ? isValidDailySchedule(data) : false;
+    }
+
+    // ===============================================================
+    // Collection Rules
+    // ===============================================================
+
+    // Authenticated user profile document
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create, update: if isOwner(userId) && uidUnchanged(userId);
+      allow delete: if isOwner(userId);
+
+      // Authenticated user private data subcollection
+      // Strictly restricted to allowlisted documents with schema validation
+      match /data/{docId} {
+        allow read: if isOwner(userId) && isValidDocId(docId);
+        allow create, update: if isOwner(userId) && isValidDocId(docId) && isValidUserDataDoc(docId, request.resource.data, userId);
+        allow delete: if isOwner(userId) && isValidDocId(docId);
+      }
+    }
+  }
+}
+
