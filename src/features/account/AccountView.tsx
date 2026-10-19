@@ -21,12 +21,8 @@ import {
   Upload,
   RotateCcw,
   Check,
-  FileJson,
-  Database,
-  Copy,
-  ExternalLink
+  FileJson
 } from 'lucide-react';
-import firebaseConfig from '../../../firebase-applet-config.json';
 
 export type BackgroundMode = 'transparent' | 'grid';
 
@@ -68,7 +64,6 @@ const AccountViewComponent: React.FC<AccountViewProps> = ({ onNavigate }) => {
   const [isImporting, setIsImporting] = useState(false);
   const [importFeedback, setImportFeedback] = useState<{ success: boolean; msg: string } | null>(null);
   const [copiedExport, setCopiedExport] = useState(false);
-  const [copiedConfig, setCopiedConfig] = useState(false);
 
   // Debounced notes to prevent app-wide context re-renders on every keystroke
   const [localNotes, setLocalNotes] = useState<string>(appData.notes || '');
@@ -299,69 +294,7 @@ const AccountViewComponent: React.FC<AccountViewProps> = ({ onNavigate }) => {
         </div>
       </div>
 
-      {/* ── FIREBASE CONFIGURATION & CONNECTED PROJECT ── */}
-      <div className="rounded-2xl border border-white/[0.1] bg-transparent p-5 sm:p-6 backdrop-blur-sm space-y-4">
-        <div className="flex items-center justify-between pb-3 border-b border-white/[0.08]">
-          <div className="flex items-center gap-2">
-            <Database className="h-4 w-4 text-[#F59E0B]" />
-            <h3 className="font-mono text-sm font-bold text-[#F8FAFC]">
-              Connected Firebase Configuration
-            </h3>
-          </div>
-          <button
-            onClick={() => {
-              navigator.clipboard.writeText(JSON.stringify(firebaseConfig, null, 2));
-              setCopiedConfig(true);
-              setTimeout(() => setCopiedConfig(false), 2000);
-            }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/[0.1] bg-transparent text-[11px] font-mono text-[#94A3B8] hover:text-[#F8FAFC] hover:border-white/[0.25] transition-all cursor-pointer"
-          >
-            {copiedConfig ? (
-              <>
-                <Check className="h-3.5 w-3.5 text-[#10B981]" />
-                <span className="text-[#10B981]">Copied</span>
-              </>
-            ) : (
-              <>
-                <Copy className="h-3.5 w-3.5" />
-                <span>Copy Config</span>
-              </>
-            )}
-          </button>
-        </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-mono">
-          <div className="p-3 rounded-xl border border-white/[0.08] bg-transparent space-y-1">
-            <span className="text-[10px] uppercase tracking-wider text-[#94A3B8] block">Project ID</span>
-            <span className="font-bold text-[#F8FAFC] truncate block">{firebaseConfig?.projectId || 'Not set'}</span>
-          </div>
-          <div className="p-3 rounded-xl border border-white/[0.08] bg-transparent space-y-1">
-            <span className="text-[10px] uppercase tracking-wider text-[#94A3B8] block">Firestore Database ID</span>
-            <span className="font-bold text-[#F8FAFC] truncate block text-[11px]">{((firebaseConfig as Record<string, unknown>)?.firestoreDatabaseId as string) || '(default)'}</span>
-          </div>
-          <div className="p-3 rounded-xl border border-white/[0.08] bg-transparent space-y-1">
-            <span className="text-[10px] uppercase tracking-wider text-[#94A3B8] block">Web App ID</span>
-            <span className="font-bold text-[#F8FAFC] truncate block text-[11px]">{firebaseConfig?.appId || 'Not set'}</span>
-          </div>
-          <div className="p-3 rounded-xl border border-white/[0.08] bg-transparent space-y-1">
-            <span className="text-[10px] uppercase tracking-wider text-[#94A3B8] block">Auth Domain</span>
-            <span className="font-bold text-[#F8FAFC] truncate block text-[11px]">{firebaseConfig?.authDomain || 'Not set'}</span>
-          </div>
-        </div>
-
-        <div className="p-3 rounded-xl border border-white/[0.06] bg-white/[0.02] text-[11px] font-mono text-[#94A3B8] space-y-1.5">
-          <div className="flex items-center gap-2 text-[#F8FAFC] font-semibold">
-            <ExternalLink className="h-3.5 w-3.5 text-[#6366F1]" />
-            <span>Where to find this in Firebase Console:</span>
-          </div>
-          <p>
-            Go to <span className="text-white">Project Settings</span> (click ⚙️ next to Project Overview in Firebase Console) &rarr; scroll down to <span className="text-white">Your apps</span>.
-          </p>
-          <p className="text-[#64748B]">
-            In the project files, this configuration is stored in <code className="text-[#A5B4FC]">firebase-applet-config.json</code> in the app root.
-          </p>
-        </div>
-      </div>
 
       {/* ── 2. ACADEMIC DATA MANAGEMENT (EXPORT / IMPORT / RESET) ── */}
       <div className="rounded-2xl border border-white/[0.1] bg-transparent p-5 sm:p-6 backdrop-blur-sm space-y-4">
