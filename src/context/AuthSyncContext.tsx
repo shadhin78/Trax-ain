@@ -9,7 +9,10 @@ import {
   onAuthStateChanged, 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
-  signOut as firebaseSignOut 
+  signOut as firebaseSignOut,
+  sendPasswordResetEmail,
+  confirmPasswordReset,
+  verifyPasswordResetCode
 } from 'firebase/auth';
 import { 
   doc, 
@@ -76,6 +79,9 @@ interface AuthSyncContextType {
   signOut: () => Promise<void>;
   login: (email: string, pass: string) => Promise<void>;
   logout: () => Promise<void>;
+  sendPasswordReset: (email: string) => Promise<void>;
+  confirmPasswordResetCode: (code: string, newPass: string) => Promise<void>;
+  verifyResetCode: (code: string) => Promise<string>;
   updateAppData: (data: Partial<UserAppData>, options?: UpdateAppDataOptions) => Promise<void>;
   flushPendingUpdates: () => Promise<void>;
   forceRefreshFromCloud: () => Promise<void>;
@@ -866,6 +872,27 @@ export const AuthSyncProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   };
 
+  const sendPasswordReset = async (email: string) => {
+    if (!auth) {
+      throw new Error('Firebase is currently disconnected. Please check your configuration.');
+    }
+    await sendPasswordResetEmail(auth, email.trim());
+  };
+
+  const confirmPasswordResetCode = async (code: string, newPass: string) => {
+    if (!auth) {
+      throw new Error('Firebase is currently disconnected. Please check your configuration.');
+    }
+    await confirmPasswordReset(auth, code, newPass);
+  };
+
+  const verifyResetCode = async (code: string) => {
+    if (!auth) {
+      throw new Error('Firebase is currently disconnected. Please check your configuration.');
+    }
+    return await verifyPasswordResetCode(auth, code);
+  };
+
   const value = {
     user,
     authLoading,
@@ -878,6 +905,9 @@ export const AuthSyncProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     signOut,
     login: signIn,
     logout: signOut,
+    sendPasswordReset,
+    confirmPasswordResetCode,
+    verifyResetCode,
     updateAppData,
     flushPendingUpdates,
     forceRefreshFromCloud,
